@@ -1,0 +1,16 @@
+node_modules/
+dist/
+release/
+test-results/
+*.log
+personal-data/
+backups/
+.env
+.env.*
+!.env.example
+UserData/
+user-data/
+BuildCache/
+deepseek-key.bin
+*.pem
+*.key

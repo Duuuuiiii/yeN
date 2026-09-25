@@ -1,0 +1,357 @@
+.music-hero {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  padding: 30px;
+  margin-bottom: 24px;
+  background: linear-gradient(130deg, var(--surface), var(--tint));
+}
+.music-hero h2 {
+  font-size: 26px;
+  margin: 7px 0;
+}
+.music-hero p {
+  margin-bottom: 17px;
+}
+.record-art {
+  width: 128px;
+  height: 128px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle,
+    #344356 0,
+    #344356 3px,
+    #2b394b 4px,
+    #2b394b 6px
+  );
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 25px #20304720;
+}
+.record-center {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  font-size: 26px;
+  color: white;
+}
+.music-library {
+  overflow: hidden;
+}
+.music-table-head,
+.music-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 0.4fr) 70px 60px 34px;
+  gap: 18px;
+  align-items: center;
+  padding: 12px 24px;
+}
+.music-table-head {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bg);
+}
+.music-row {
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  transition: background 0.15s;
+}
+.music-row:hover,
+.music-row.active {
+  background: var(--tint);
+}
+.track-name {
+  display: flex;
+  gap: 17px;
+  align-items: center;
+  min-width: 0;
+  text-align: left;
+  padding: 6px 0;
+}
+.track-name strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.track-name small {
+  font-size: 11px;
+  display: block;
+  color: var(--muted);
+}
+.track-number {
+  width: 24px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.music-album {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.music-format {
+  width: max-content;
+}
+.music-empty {
+  padding: 50px 20px;
+}
+.music-empty h2 {
+  margin: 10px 0;
+}
+.music-empty p {
+  line-height: 2;
+}
+.snapshot-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+#music-player {
+  position: fixed;
+  bottom: 0;
+  left: 210px;
+  right: 0;
+  min-height: 86px;
+  padding: 10px 28px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  z-index: 25;
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) minmax(200px, 1.5fr) minmax(
+      120px,
+      0.7fr
+    );
+  gap: 25px;
+  align-items: center;
+  box-shadow: 0 -4px 25px #20304706;
+}
+.player-track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  text-align: left;
+  padding: 0;
+}
+.player-cover {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--tint);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.player-track > span:last-child {
+  min-width: 0;
+}
+.player-track strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-track small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+.player-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.player-play {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: grid;
+  place-items: center;
+}
+.player-progress {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 10px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.player-progress input {
+  flex: 1;
+  width: 100%;
+}
+#music-player input[type="range"] {
+  padding: 0;
+  height: 15px;
+  accent-color: var(--accent);
+  border: 0;
+}
+.player-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.player-right input {
+  width: 75px;
+}
+.player-right .active {
+  color: var(--accent);
+  background: var(--tint);
+}
+#toast {
+  bottom: 108px;
+}
+.news-sources {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 22px;
+}
+.source-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  font-size: 12px;
+}
+.source-chip small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.source-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+.source-dot.failed {
+  background: #bd8c3b;
+}
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 18px;
+}
+.news-card {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+}
+.news-title {
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  padding: 16px 0 12px;
+  line-height: 1.65;
+}
+.news-title:hover {
+  color: var(--accent);
+}
+.news-summary {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.9;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.news-actions {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+@media (max-width: 1250px) {
+  #music-player {
+    left: 185px;
+    gap: 15px;
+    padding: 10px 20px;
+  }
+  .player-right input {
+    width: 60px;
+  }
+}
+@media (max-width: 900px) {
+  #music-player {
+    left: 78px;
+    grid-template-columns: minmax(110px, 1fr) minmax(180px, 1.5fr) 45px;
+    padding: 10px 16px;
+  }
+  .player-right input,
+  .volume-icon {
+    display: none;
+  }
+  .music-table-head,
+  .music-row {
+    grid-template-columns: minmax(0, 1fr) 55px 50px 30px;
+    gap: 10px;
+    padding: 12px 15px;
+  }
+  .music-album,
+  .music-table-head > span:nth-child(2) {
+    display: none;
+  }
+  .news-grid {
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  #music-player {
+    left: 0;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 12px;
+  }
+  .player-right {
+    display: none;
+  }
+  .player-cover {
+    display: none;
+  }
+  .music-hero {
+    padding: 20px;
+    gap: 20px;
+  }
+  .record-art {
+    width: 80px;
+    height: 80px;
+  }
+  .music-hero h2 {
+    font-size: 21px;
+  }
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
+  .sidebar nav {
+    gap: 0;
+  }
+  .nav-item {
+    padding: 8px;
+  }
+  .sidebar {
+    padding: 10px 8px;
+  }
+  .brand-mark {
+    width: 27px;
+    height: 30px;
+  }
+  .music-row .tag {
+    font-size: 9px;
+  }
+}
