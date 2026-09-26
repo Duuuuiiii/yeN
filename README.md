@@ -68,6 +68,8 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1
 
 输出位于 `release/`。当前个人开发版本没有商业代码签名证书。
 
+新安装时，安装器优先选择 `E:\Apps\yeN`，没有 E 盘时选择 `D:\Apps\yeN`；两者都不存在时使用 Windows 默认目录。升级会沿用现有安装位置，安装页面也允许手动修改目录。
+
 ## 目录
 
 ```text

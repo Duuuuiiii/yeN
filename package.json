@@ -1,7 +1,7 @@
 {
   "name": "yen-study-desk",
   "productName": "yeN",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "本地学习工作台：笔记、任务、目标与日程",
   "author": "yeN个人项目",
@@ -44,6 +44,7 @@
       "signExecutable": false
     },
     "nsis": {
+      "include": "build/installer.nsh",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
