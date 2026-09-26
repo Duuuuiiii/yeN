@@ -12,7 +12,7 @@ $env:ELECTRON_BUILDER_BINARIES_MIRROR = 'https://npmmirror.com/mirrors/electron-
 Push-Location $projectRoot
 try {
   node scripts/build.cjs
-  if ($LASTEXITCODE) { throw '前端构建失败' }
+  if ($LASTEXITCODE) { throw 'Frontend build failed' }
   node node_modules/electron-builder/cli.js --win nsis portable --x64 --config.electronDist=node_modules/electron/dist
-  if ($LASTEXITCODE) { throw '安装包构建失败' }
+  if ($LASTEXITCODE) { throw 'Windows package build failed' }
 } finally { Pop-Location }

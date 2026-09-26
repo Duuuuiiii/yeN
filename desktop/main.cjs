@@ -235,9 +235,12 @@ function requestQuit() {
 }
 function createTray() {
   tray = new Tray(path.join(__dirname, "../build/icon.ico"));
-  tray.setToolTip("yeN · 学习工作台");
+  const version = app.getVersion();
+  tray.setToolTip(`yeN v${version} · 学习工作台`);
   tray.setContextMenu(
     Menu.buildFromTemplate([
+      { label: `yeN v${version}`, enabled: false },
+      { type: "separator" },
       { label: "打开 yeN", click: showWindow },
       { type: "separator" },
       { label: "彻底退出", click: requestQuit },

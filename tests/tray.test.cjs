@@ -29,6 +29,18 @@ const path = require("node:path");
     assert.ok(window, "主窗口没有创建");
     await window.waitForSelector(".today-grid");
 
+    assert.equal(
+      await window.locator("#sidebar-version").innerText(),
+      "v0.5.2",
+    );
+    assert.ok(
+      (await window.locator("#footer-version").innerText()).includes("v0.5.2"),
+    );
+    assert.ok((await window.title()).includes("v0.5.2"));
+
+    await window.locator('[data-page="settings"]').click();
+    assert.equal(await window.locator(".about-version").innerText(), "v0.5.2");
+
     const state = await window.evaluate(() => window.shiyeDesktop.getState());
     assert.equal(state.settings.background, true);
 

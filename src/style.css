@@ -1135,6 +1135,13 @@ footer {
   color: var(--muted);
   margin: 10px 0 18px;
 }
+.about-version {
+  margin: 10px 0;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--accent-dark);
+}
 .theme-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
