@@ -2,7 +2,22 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
-const { Assistant, validatePlan } = require("../desktop/ai.cjs");
+const {
+  Assistant,
+  validateHistory,
+  validatePlan,
+} = require("../desktop/ai.cjs");
+test("AI conversation history accepts only bounded user and assistant messages", () => {
+  assert.deepEqual(validateHistory([{ role: "user", content: "继续解释" }]), [
+    { role: "user", content: "继续解释" },
+  ]);
+  assert.throws(() => validateHistory([{ role: "system", content: "x" }]));
+  assert.throws(() =>
+    validateHistory(
+      Array.from({ length: 25 }, () => ({ role: "user", content: "x" })),
+    ),
+  );
+});
 test("AI plan validation rejects bad dates, excessive duration and unbounded plans", () => {
   const session = {
     title: "线性代数",
@@ -53,6 +68,18 @@ test("AI uses encrypted key store, fixed official endpoint and rejects auth/inva
     seen.options.headers.Authorization,
     "Bearer unit-test-secret-never-sent",
   );
+  await ai.ask({
+    mode: "chat",
+    prompt: "继续",
+    history: [
+      { role: "user", content: "什么是矩阵" },
+      { role: "assistant", content: "矩阵是数的矩形排列" },
+    ],
+  });
+  assert.deepEqual(JSON.parse(seen.options.body).messages.slice(1, 3), [
+    { role: "user", content: "什么是矩阵" },
+    { role: "assistant", content: "矩阵是数的矩形排列" },
+  ]);
   code = 401;
   await assert.rejects(ai.ask({ mode: "chat", prompt: "x" }), /API Key 无效/);
   code = 200;

@@ -1,6 +1,12 @@
 const audio = new Audio();
 audio.preload = "metadata";
-let musicState = { selected: null, mode: "list", seeking: false, busy: false };
+let musicState = {
+  selected: null,
+  playlist: "all",
+  mode: "list",
+  seeking: false,
+  busy: false,
+};
 const musicTime = (seconds) =>
   Number.isFinite(seconds)
     ? `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`
@@ -8,11 +14,28 @@ const musicTime = (seconds) =>
 function selectedTrack() {
   return (model?.music || []).find((t) => t.id === musicState.selected);
 }
-function musicView() {
+function playlistTracks() {
   const tracks = model.music || [];
-  return `<div class="page-head"><div><h1>音乐</h1><div class="muted">${tracks.length} 首 · 本地 MP3 / FLAC</div></div><button class="button primary" data-music-action="import" ${musicState.busy ? "disabled" : ""}>${icon("plus", 16)} ${musicState.busy ? "正在导入…" : "导入音乐"}</button></div>
- <div class="music-hero card"><div class="record-art"><div class="record-center">y</div></div><div class="grow"><span class="caps muted">LOCAL LIBRARY</span><h2>${esc(selectedTrack()?.title || "我的音乐")}</h2><p class="muted">${esc(selectedTrack()?.artist || "导入后，即可边学习边听。")}</p><div class="row wrap"><button class="button primary" data-music-action="play-all" ${tracks.length ? "" : "disabled"}>${icon("play", 15)} 播放全部</button><span class="tag neutral">无需网络</span></div></div></div>
- <section class="card music-library"><div class="music-table-head"><span>歌曲</span><span>专辑</span><span>格式</span><span>时长</span><span></span></div>${tracks.length ? tracks.map((t, i) => `<div class="music-row ${musicState.selected === t.id ? "active" : ""}"><button class="track-name" data-track-play="${t.id}" aria-label="播放 ${esc(t.title)}"><span class="track-number">${musicState.selected === t.id && !audio.paused ? icon("music", 16) : pad(i + 1)}</span><span class="grow"><strong>${esc(t.title)}</strong><small>${esc(t.artist)}</small></span></button><span class="music-album muted">${esc(t.album || "—")}</span><span class="music-format tag neutral">${t.format}</span><span class="muted small">${musicTime(t.duration)}</span><button class="icon-button" data-track-remove="${t.id}" aria-label="移除 ${esc(t.title)}">${icon("x", 15)}</button></div>`).join("") : '<div class="empty music-empty">' + icon("music", 36) + "<h2>还没有音乐</h2><p>点击「导入音乐」，选择电脑中的 MP3 或 FLAC。<br>支持一次导入多首，单曲上限 200 MB。</p></div>"}</section>`;
+  if (musicState.playlist === "all") return tracks;
+  const list = (model.playlists || []).find(
+    (p) => p.id === musicState.playlist,
+  );
+  return list
+    ? list.trackIds
+        .map((id) => tracks.find((track) => track.id === id))
+        .filter(Boolean)
+    : tracks;
+}
+function musicView() {
+  const allTracks = model.music || [],
+    tracks = playlistTracks(),
+    playlists = model.playlists || [],
+    active = playlists.find((p) => p.id === musicState.playlist),
+    title = active?.name || "全部音乐";
+  return `<div class="page-head"><div><h1>音乐</h1><div class="muted">${allTracks.length} 首 · ${playlists.length} 个歌单 · 本地 MP3 / FLAC</div></div><button class="button primary" data-music-action="import" ${musicState.busy ? "disabled" : ""}>${icon("plus", 16)} ${musicState.busy ? "正在导入…" : "导入音乐"}</button></div>
+ <div class="music-hero card"><div class="record-art"><div class="record-center">y</div></div><div class="grow"><span class="caps muted">${esc(title)}</span><h2>${esc(selectedTrack()?.title || title)}</h2><p class="muted">${esc(selectedTrack()?.artist || "建立自己的学习、专注和休息歌单。")}</p><div class="row wrap"><button class="button primary" data-music-action="play-all" ${tracks.length ? "" : "disabled"}>${icon("play", 15)} 播放当前歌单</button><span class="tag neutral">无需网络</span></div></div></div>
+ <div class="music-layout"><aside class="card playlist-panel"><div class="row between"><h2>歌单</h2><button class="icon-button" data-music-action="new-playlist" aria-label="新建歌单">${icon("plus", 16)}</button></div><button class="playlist-item ${musicState.playlist === "all" ? "active" : ""}" data-playlist-select="all">${icon("music", 16)}<span>全部音乐</span><small>${allTracks.length}</small></button>${playlists.map((p) => `<button class="playlist-item ${musicState.playlist === p.id ? "active" : ""}" data-playlist-select="${p.id}">${icon("folder", 16)}<span>${esc(p.name)}</span><small>${p.trackIds.length}</small></button>`).join("")}${active ? `<button class="text-button playlist-delete" data-music-action="delete-playlist">删除当前歌单</button>` : ""}</aside>
+ <section class="card music-library"><div class="music-library-title"><div><h2>${esc(title)}</h2><span class="muted small">${tracks.length} 首</span></div>${active ? '<span class="muted small">点击 ＋ 添加到其他歌单</span>' : ""}</div><div class="music-table-head"><span>歌曲</span><span>专辑</span><span>格式</span><span>时长</span><span></span><span></span></div>${tracks.length ? tracks.map((t, i) => `<div class="music-row ${musicState.selected === t.id ? "active" : ""}"><button class="track-name" data-track-play="${t.id}" aria-label="播放 ${esc(t.title)}"><span class="track-number">${musicState.selected === t.id && !audio.paused ? icon("music", 16) : pad(i + 1)}</span><span class="grow"><strong>${esc(t.title)}</strong><small>${esc(t.artist)}</small></span></button><span class="music-album muted">${esc(t.album || "—")}</span><span class="music-format tag neutral">${t.format}</span><span class="muted small">${musicTime(t.duration)}</span><button class="icon-button" data-track-add="${t.id}" aria-label="添加 ${esc(t.title)} 到歌单">${icon("plus", 15)}</button><button class="icon-button" data-track-remove="${t.id}" aria-label="${active ? "从歌单移除" : "从音乐库移除"} ${esc(t.title)}">${icon("x", 15)}</button></div>`).join("") : '<div class="empty music-empty">' + icon("music", 36) + `<h2>${active ? "歌单还是空的" : "还没有音乐"}</h2><p>${active ? "从全部音乐中点击 ＋ 添加歌曲。" : "点击「导入音乐」，选择电脑中的 MP3 或 FLAC。<br>支持一次导入多首，单曲上限 200 MB。"}</p></div>`}</section></div>`;
 }
 function renderPlayer() {
   let player = $("#music-player");
@@ -46,7 +69,7 @@ async function playTrack(id) {
   }
 }
 async function nextTrack(direction = 1) {
-  const tracks = model.music || [];
+  const tracks = playlistTracks();
   if (!tracks.length) return;
   if (musicState.mode === "one" && direction === 1) {
     audio.currentTime = 0;
@@ -86,15 +109,73 @@ document.addEventListener("click", async (e) => {
   const button = e.target.closest("button");
   if (!button || !model) return;
   try {
+    if (button.dataset.playlistSelect) {
+      musicState.playlist = button.dataset.playlistSelect;
+      render();
+      return;
+    }
+    if (button.dataset.trackAdd) {
+      if (!(model.playlists || []).length) {
+        showDialog(
+          "还没有歌单",
+          '<p>先创建一个歌单，再把喜欢的歌曲放进去。</p><div class="dialog-actions"><button class="button primary" data-music-action="new-playlist">新建歌单</button></div>',
+        );
+      } else {
+        showDialog(
+          "添加到歌单",
+          `<div class="playlist-picker">${model.playlists
+            .map(
+              (list) =>
+                `<button class="button" data-add-to-playlist="${list.id}" data-track-id="${button.dataset.trackAdd}">${esc(list.name)}${list.trackIds.includes(button.dataset.trackAdd) ? " · 已添加" : ""}</button>`,
+            )
+            .join("")}</div>`,
+        );
+      }
+      return;
+    }
+    if (button.dataset.addToPlaylist) {
+      const list = model.playlists.find(
+        (item) => item.id === button.dataset.addToPlaylist,
+      );
+      if (list && !list.trackIds.includes(button.dataset.trackId)) {
+        list.trackIds.push(button.dataset.trackId);
+        await persist();
+        toast(`已添加到「${list.name}」`);
+      } else toast("这首歌已经在歌单中");
+      closeModal();
+      if (ui.page === "music") render();
+      return;
+    }
     if (button.dataset.trackPlay) {
       await playTrack(button.dataset.trackPlay);
       return;
     }
     if (button.dataset.trackRemove) {
+      if (musicState.playlist !== "all") {
+        const list = model.playlists.find(
+          (item) => item.id === musicState.playlist,
+        );
+        const index = list.trackIds.indexOf(button.dataset.trackRemove);
+        if (index < 0) return;
+        const [trackId] = list.trackIds.splice(index, 1);
+        persist();
+        render();
+        toast("已从当前歌单移除", () => {
+          list.trackIds.splice(index, 0, trackId);
+          persist();
+          render();
+        });
+        return;
+      }
       const index = model.music.findIndex(
         (t) => t.id === button.dataset.trackRemove,
       );
       const track = model.music.splice(index, 1)[0];
+      const previousLists = model.playlists.map((list) => [...list.trackIds]);
+      model.playlists.forEach(
+        (list) =>
+          (list.trackIds = list.trackIds.filter((id) => id !== track.id)),
+      );
       if (musicState.selected === track.id) {
         audio.pause();
         audio.removeAttribute("src");
@@ -106,6 +187,9 @@ document.addEventListener("click", async (e) => {
       renderPlayer();
       toast("已从播放列表移除", () => {
         model.music.splice(index, 0, track);
+        model.playlists.forEach(
+          (list, listIndex) => (list.trackIds = previousLists[listIndex]),
+        );
         persist();
         render();
         renderPlayer();
@@ -117,8 +201,30 @@ document.addEventListener("click", async (e) => {
         await importMusicUI();
         break;
       case "play-all":
-        if (model.music.length) await playTrack(model.music[0].id);
+        if (playlistTracks().length) await playTrack(playlistTracks()[0].id);
         break;
+      case "new-playlist":
+        showDialog(
+          "新建歌单",
+          '<form id="playlist-form"><label class="field">歌单名称<input name="name" maxlength="60" required autofocus placeholder="例如：专注学习"></label><div class="dialog-actions"><button class="button" type="button" data-action="close-modal">取消</button><button class="button primary" type="submit">创建歌单</button></div></form>',
+        );
+        break;
+      case "delete-playlist": {
+        const index = model.playlists.findIndex(
+          (list) => list.id === musicState.playlist,
+        );
+        if (index < 0) break;
+        const [list] = model.playlists.splice(index, 1);
+        musicState.playlist = "all";
+        await persist();
+        render();
+        toast(`已删除歌单「${list.name}」`, () => {
+          model.playlists.splice(index, 0, list);
+          persist();
+          render();
+        });
+        break;
+      }
       case "toggle":
         if (!audio.paused) audio.pause();
         else if (model.music.length)
@@ -149,6 +255,19 @@ document.addEventListener("click", async (e) => {
     toast("音乐操作失败：" + err.message);
     musicState.busy = false;
   }
+});
+document.addEventListener("submit", async (e) => {
+  if (e.target.id !== "playlist-form") return;
+  e.preventDefault();
+  const name = String(new FormData(e.target).get("name") || "").trim();
+  if (!name) return;
+  const list = { id: uid(), name, trackIds: [] };
+  model.playlists.push(list);
+  musicState.playlist = list.id;
+  await persist();
+  closeModal();
+  render();
+  toast(`已创建歌单「${name}」`);
 });
 document.addEventListener("input", (e) => {
   if (e.target.id === "music-volume") {
@@ -191,6 +310,20 @@ audio.addEventListener("error", () => {
 });
 function initializeMusic() {
   model.music = model.music || [];
+  model.playlists = Array.isArray(model.playlists) ? model.playlists : [];
+  const trackIds = new Set(model.music.map((track) => track.id));
+  model.playlists = model.playlists
+    .filter(
+      (list) =>
+        list &&
+        typeof list.id === "string" &&
+        typeof list.name === "string" &&
+        Array.isArray(list.trackIds),
+    )
+    .map((list) => ({
+      ...list,
+      trackIds: [...new Set(list.trackIds.filter((id) => trackIds.has(id)))],
+    }));
   audio.volume = Math.min(1, Math.max(0, model.settings.musicVolume ?? 0.7));
   musicState.mode = ["list", "one", "shuffle"].includes(
     model.settings.musicMode,

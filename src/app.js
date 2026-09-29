@@ -111,6 +111,7 @@
     calendar: "week",
     date: today(),
     focus: false,
+    noteFullscreen: false,
     taskFilter: "all",
   };
   let focus = { task: "", remaining: 1500, running: false, end: 0 };
@@ -488,7 +489,7 @@
   function notesView() {
     const n = model.notes.find((n) => n.id === ui.selected) || model.notes[0];
     ui.selected = n?.id || null;
-    return `<div class="page-head"><div><h1>笔记</h1><div class="muted">${model.notes.length} 篇笔记</div></div><button class="button primary" data-action="new-note">${icon("plus", 16)} 新建笔记</button></div><div class="card notes-layout ${ui.focus ? "focus" : ""}"><section class="notes-list"><input type="search" id="note-search" aria-label="搜索笔记" placeholder="搜索标题和正文" value="${esc(ui.query)}"><div class="folder-filter">${["全部", ...new Set(model.notes.map((n) => n.folder))].map((f) => `<button data-folder="${esc(f)}" class="${ui.folder === f ? "active" : ""}">${esc(f)}</button>`).join("")}</div><div class="note-list-items" id="note-list-items">${noteListHTML()}</div></section>${n ? `<section class="editor-panel"><div class="editor-top"><input id="note-folder" aria-label="笔记分类" value="${esc(n.folder)}" maxlength="30" style="font-size:11px;padding:5px 8px;width:130px"><div class="row" style="gap:4px"><button class="icon-button" data-action="export-note" aria-label="导出当前笔记文本">${icon("download", 16)}</button><button class="icon-button" data-action="focus-editor" aria-label="${ui.focus ? "显示" : "隐藏"}笔记列表">${icon("expand", 16)}</button><button class="icon-button" data-action="delete-note" aria-label="删除当前笔记">${icon("trash", 16)}</button></div></div><div class="editor-toolbar" role="toolbar" aria-label="文字和插入工具"><button data-format="bold" aria-label="加粗"><b>B</b></button><button data-format="italic" aria-label="斜体"><i>I</i></button><button data-format="underline" aria-label="下划线"><u>U</u></button><button data-format="formatBlock" data-value="h2" aria-label="二级标题">H2</button><button data-format="formatBlock" data-value="p" aria-label="正文">正文</button><button data-format="insertUnorderedList" aria-label="项目列表">${icon("list", 15)}</button><span class="toolbar-divider"></span><button data-action="insert-image">${icon("image", 15)} 图片</button><button data-action="draw">${icon("pen", 15)} 画板</button><button data-action="attach">${icon("clip", 15)} 附件</button></div><div class="editor-sheet"><input class="note-title-input" id="note-title" value="${esc(n.title)}" placeholder="未命名笔记" aria-label="笔记标题" maxlength="180"><div class="note-info"><span id="note-charcount">${plain(n.html).length}</span> 字 · 自动保存</div><div class="note-body" id="note-body" role="textbox" aria-label="笔记正文" aria-multiline="true" contenteditable="true" spellcheck="false">${cleanHTML(n.html)}</div><div id="note-drawings">${(n.drawings || []).map((d) => `<div class="drawing-wrap"><img class="drawing-preview" data-asset-id="${d.assetId}" alt="手绘画板"><div class="row between"><button class="text-button" data-edit-drawing="${d.id}">${icon("pen", 13)} 继续绘画</button><button class="icon-button" data-remove-drawing="${d.id}" aria-label="移除画板">${icon("trash", 14)}</button></div></div>`).join("")}</div><div class="attachment-list">${(n.attachments || []).map((a) => `<div class="attachment-item">${icon("file", 21)}<div class="grow"><div class="filename">${esc(a.name)}</div><div class="muted small">${bytes(a.size)}</div></div><button class="icon-button" data-download-asset="${a.id}" aria-label="下载 ${esc(a.name)}">${icon("download", 16)}</button><button class="icon-button" data-remove-attachment="${a.id}" aria-label="移除 ${esc(a.name)}">${icon("x", 15)}</button></div>`).join("")}</div></div></section>` : '<div class="empty">新建一篇笔记，开始记录。</div>'}</div>`;
+    return `<div class="page-head"><div><h1>笔记</h1><div class="muted">${model.notes.length} 篇笔记</div></div><button class="button primary" data-action="new-note">${icon("plus", 16)} 新建笔记</button></div><div class="card notes-layout ${ui.focus ? "focus" : ""} ${ui.noteFullscreen ? "fullscreen-note" : ""}"><section class="notes-list"><input type="search" id="note-search" aria-label="搜索笔记" placeholder="搜索标题和正文" value="${esc(ui.query)}"><div class="folder-filter">${["全部", ...new Set(model.notes.map((n) => n.folder))].map((f) => `<button data-folder="${esc(f)}" class="${ui.folder === f ? "active" : ""}">${esc(f)}</button>`).join("")}</div><div class="note-list-items" id="note-list-items">${noteListHTML()}</div></section>${n ? `<section class="editor-panel"><div class="editor-top"><input id="note-folder" aria-label="笔记分类" value="${esc(n.folder)}" maxlength="30" style="font-size:11px;padding:5px 8px;width:130px"><div class="row" style="gap:4px"><button class="icon-button" data-action="export-note" aria-label="导出当前笔记文本">${icon("download", 16)}</button><button class="icon-button" data-action="focus-editor" aria-label="${ui.focus ? "显示" : "隐藏"}笔记列表">${icon("list", 16)}</button><button class="icon-button" data-action="fullscreen-note" aria-label="${ui.noteFullscreen ? "退出" : "进入"}笔记全屏">${icon(ui.noteFullscreen ? "x" : "expand", 16)}</button><button class="icon-button" data-action="delete-note" aria-label="删除当前笔记">${icon("trash", 16)}</button></div></div><div class="editor-toolbar" role="toolbar" aria-label="文字和插入工具"><button data-format="bold" aria-label="加粗"><b>B</b></button><button data-format="italic" aria-label="斜体"><i>I</i></button><button data-format="underline" aria-label="下划线"><u>U</u></button><button data-format="formatBlock" data-value="h2" aria-label="二级标题">H2</button><button data-format="formatBlock" data-value="p" aria-label="正文">正文</button><button data-format="insertUnorderedList" aria-label="项目列表">${icon("list", 15)}</button><span class="toolbar-divider"></span><button data-action="insert-image">${icon("image", 15)} 图片</button><button data-action="draw">${icon("pen", 15)} 画板</button><button data-action="attach">${icon("clip", 15)} 附件</button></div><div class="editor-sheet"><input class="note-title-input" id="note-title" value="${esc(n.title)}" placeholder="未命名笔记" aria-label="笔记标题" maxlength="180"><div class="note-info"><span id="note-charcount">${plain(n.html).length}</span> 字 · 自动保存</div><div class="note-body" id="note-body" role="textbox" aria-label="笔记正文" aria-multiline="true" contenteditable="true" spellcheck="false">${cleanHTML(n.html)}</div><div id="note-drawings">${(n.drawings || []).map((d) => `<div class="drawing-wrap"><img class="drawing-preview" data-asset-id="${d.assetId}" alt="手绘画板"><div class="row between"><button class="text-button" data-edit-drawing="${d.id}">${icon("pen", 13)} 继续绘画</button><button class="icon-button" data-remove-drawing="${d.id}" aria-label="移除画板">${icon("trash", 14)}</button></div></div>`).join("")}</div><div class="attachment-list">${(n.attachments || []).map((a) => `<div class="attachment-item">${icon("file", 21)}<div class="grow"><div class="filename">${esc(a.name)}</div><div class="muted small">${bytes(a.size)}</div></div><button class="icon-button" data-download-asset="${a.id}" aria-label="下载 ${esc(a.name)}">${icon("download", 16)}</button><button class="icon-button" data-remove-attachment="${a.id}" aria-label="移除 ${esc(a.name)}">${icon("x", 15)}</button></div>`).join("")}</div></div></section>` : '<div class="empty">新建一篇笔记，开始记录。</div>'}</div>`;
   }
   function noteListHTML() {
     const ns = model.notes.filter(
@@ -684,6 +685,10 @@
       videos: videosView,
       settings: settingsView,
     }[ui.page]();
+    document.body.classList.toggle(
+      "note-fullscreen",
+      ui.page === "notes" && ui.noteFullscreen,
+    );
     main.classList.remove("page-enter");
     void main.offsetWidth;
     main.classList.add("page-enter");
@@ -707,6 +712,7 @@
     )
       return;
     flush();
+    if (page !== "notes") ui.noteFullscreen = false;
     ui.page = page;
     render();
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -1302,6 +1308,38 @@
         !["MP3", "FLAC"].includes(t.format)
       )
         throw new Error("音乐记录无效");
+    m.playlists = m.playlists || [];
+    if (!Array.isArray(m.playlists) || m.playlists.length > 200)
+      throw new Error("歌单记录无效");
+    const musicIds = new Set(m.music.map((track) => track.id)),
+      playlistIds = new Set();
+    for (const list of m.playlists) {
+      if (
+        !safeId(list.id) ||
+        playlistIds.has(list.id) ||
+        typeof list.name !== "string" ||
+        !list.name.trim() ||
+        list.name.length > 60 ||
+        !Array.isArray(list.trackIds) ||
+        list.trackIds.length > 10000 ||
+        list.trackIds.some((id) => !musicIds.has(id))
+      )
+        throw new Error("歌单记录无效");
+      playlistIds.add(list.id);
+      list.trackIds = [...new Set(list.trackIds)];
+    }
+    m.aiChat = m.aiChat || [];
+    if (!Array.isArray(m.aiChat) || m.aiChat.length > 24)
+      throw new Error("AI 对话记录无效");
+    for (const message of m.aiChat)
+      if (
+        !message ||
+        !["user", "assistant"].includes(message.role) ||
+        typeof message.content !== "string" ||
+        !message.content.trim() ||
+        message.content.length > 12000
+      )
+        throw new Error("AI 对话记录无效");
     for (const g of m.goals)
       if (typeof g.description !== "string" || typeof g.deadline !== "string")
         throw new Error("目标格式错误");
@@ -1338,8 +1376,13 @@
         audio.pause();
         audio.removeAttribute("src");
         musicState.selected = null;
+        musicState.playlist = "all";
         model = data.model;
         model.music = model.music || [];
+        model.playlists = Array.isArray(model.playlists) ? model.playlists : [];
+        model.aiChat = Array.isArray(model.aiChat)
+          ? model.aiChat.slice(-24)
+          : [];
         focus = { task: "", remaining: 1500, running: false, end: 0 };
         ui.selected = model.notes[0]?.id;
         closeModal();
@@ -1659,6 +1702,10 @@
           ui.focus = !ui.focus;
           render();
           break;
+        case "fullscreen-note":
+          ui.noteFullscreen = !ui.noteFullscreen;
+          render();
+          break;
         case "delete-note":
           removeItem("notes", ui.selected);
           break;
@@ -1954,6 +2001,11 @@
     }
   });
   document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && ui.noteFullscreen && !modal.open) {
+      ui.noteFullscreen = false;
+      render();
+      return;
+    }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
       e.preventDefault();
       searchDialog();
@@ -2014,6 +2066,8 @@
       ui.calendar = model.session?.calendar || "week";
       ui.date = model.session?.date || today();
       model.music = model.music || [];
+      model.playlists = Array.isArray(model.playlists) ? model.playlists : [];
+      model.aiChat = Array.isArray(model.aiChat) ? model.aiChat.slice(-24) : [];
       const backgroundSettingMissing =
         typeof model.settings.background !== "boolean";
       const appearanceSettingMissing = !["system", "light", "dark"].includes(

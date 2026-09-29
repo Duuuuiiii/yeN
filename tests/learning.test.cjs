@@ -33,7 +33,8 @@ const assert = require("node:assert/strict"),
       globalThis.fetch = async (url, options) => {
         if (url !== "https://api.deepseek.com/chat/completions")
           return original(url, options);
-        globalThis.yenCalls.push(JSON.parse(options.body));
+        const request = JSON.parse(options.body);
+        globalThis.yenCalls.push(request);
         const plan = {
           summary: "每天练习 30 分钟",
           sessions: [
@@ -45,11 +46,16 @@ const assert = require("node:assert/strict"),
             },
           ],
         };
+        const content = request.response_format
+          ? JSON.stringify(plan)
+          : request.messages.some((message) => message.role === "assistant")
+            ? "这是结合上一轮内容的继续回答"
+            : "这是第一轮学习回答";
         return new Response(
           JSON.stringify({
             choices: [
               {
-                message: { content: JSON.stringify(plan) },
+                message: { content },
                 finish_reason: "stop",
               },
             ],
@@ -85,6 +91,29 @@ const assert = require("node:assert/strict"),
     assert.equal(calls[0].model, "deepseek-v4-pro");
     assert.ok(!calls[0].messages[1].content.includes("goals"));
     assert.ok(!JSON.stringify(after).includes("unit-test-secret"));
+    await win.locator("#ai-prompt").fill("什么是特征值？");
+    await win.locator('[data-ai="chat"]').click();
+    await win.waitForFunction(
+      () => document.querySelectorAll(".ai-message.assistant").length === 1,
+    );
+    await win.locator("#ai-prompt").fill("继续用几何直觉解释");
+    await win.locator('[data-ai="chat"]').click();
+    await win.waitForFunction(
+      () => document.querySelectorAll(".ai-message.assistant").length === 2,
+    );
+    const conversationCalls = await app.evaluate(() => globalThis.yenCalls);
+    assert.equal(conversationCalls.length, 3);
+    assert.ok(
+      conversationCalls[2].messages.some(
+        (message) =>
+          message.role === "assistant" &&
+          message.content === "这是第一轮学习回答",
+      ),
+    );
+    assert.equal(
+      (await win.evaluate(() => window.shiyeDesktop.getState())).aiChat.length,
+      4,
+    );
     await win.screenshot({
       path: path.join(root, "test-results/ai-preview.png"),
     });
@@ -105,34 +134,7 @@ const assert = require("node:assert/strict"),
         "https://search.bilibili.com/all?keyword=",
       ),
     );
-    // Generate an original video fixture in Chromium, then verify local playback and seeking.
-    const bytes = await win.evaluate(async () => {
-      const c = document.createElement("canvas");
-      c.width = 320;
-      c.height = 180;
-      const ctx = c.getContext("2d");
-      const stream = c.captureStream(10);
-      const rec = new MediaRecorder(stream, {
-          mimeType: "video/webm;codecs=vp9",
-        }),
-        chunks = [];
-      rec.ondataavailable = (e) => chunks.push(e.data);
-      const done = new Promise((r) => (rec.onstop = r));
-      rec.start();
-      let i = 0;
-      const timer = setInterval(() => {
-        ctx.fillStyle = i++ % 2 ? "#587eb8" : "#273448";
-        ctx.fillRect(0, 0, 320, 180);
-      }, 100);
-      await new Promise((r) => setTimeout(r, 1200));
-      rec.stop();
-      await done;
-      clearInterval(timer);
-      stream.getTracks().forEach((t) => t.stop());
-      return Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()));
-    });
-    const file = path.join(data, "test.webm");
-    await fs.writeFile(file, Buffer.from(bytes));
+    const file = path.join(root, "tests/fixtures/test-tone.webm");
     await win.locator("#local-video").setInputFiles(file);
     await win.waitForFunction(
       () => document.querySelector("#learning-video")?.readyState >= 2,
@@ -142,6 +144,17 @@ const assert = require("node:assert/strict"),
       await win.locator("#learning-video").evaluate((v) => v.playbackRate),
       1.5,
     );
+    const subtitle = path.join(data, "test.srt");
+    await fs.writeFile(
+      subtitle,
+      "1\n00:00:00,000 --> 00:00:01,000\n学习字幕测试\n",
+    );
+    await win.locator("#local-subtitle").setInputFiles(subtitle);
+    await win.waitForSelector(".subtitle-loaded");
+    assert.ok(
+      (await win.locator(".subtitle-loaded").innerText()).includes("test.srt"),
+    );
+    assert.equal(await win.locator("#learning-video track").count(), 1);
     await win.locator("#learning-video").evaluate(async (v) => {
       await v.play();
     });

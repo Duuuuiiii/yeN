@@ -30,6 +30,81 @@
   line-height: 1.85;
   margin: 18px 0;
 }
+.ai-skills {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 9px;
+  margin-bottom: 18px;
+}
+.ai-skills button {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  text-align: left;
+}
+.ai-skills button:hover {
+  border-color: var(--accent);
+  background: var(--tint);
+}
+.ai-chat-card {
+  min-height: 560px;
+}
+.ai-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 600px;
+  overflow: auto;
+  padding: 4px 3px 20px;
+}
+.ai-message {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.ai-message > span {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--tint);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+.ai-message > div {
+  max-width: calc(100% - 40px);
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 4px 12px 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}
+.ai-message.user {
+  flex-direction: row-reverse;
+}
+.ai-message.user > span {
+  background: var(--accent);
+  color: white;
+}
+.ai-message.user > div {
+  background: var(--tint);
+  border-color: transparent;
+  border-radius: 12px 4px 12px 12px;
+}
+.ai-message.waiting > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+}
+.ai-chat-empty {
+  padding: 70px 15px;
+}
 .plan-sessions {
   display: grid;
   gap: 10px;
@@ -81,6 +156,11 @@
   padding: 14px;
   gap: 12px;
   flex-wrap: wrap;
+}
+.subtitle-loaded {
+  display: block;
+  color: var(--accent);
+  margin-top: 3px;
 }
 .video-search {
   display: flex;

@@ -42,10 +42,68 @@
 .music-library {
   overflow: hidden;
 }
+.music-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.playlist-panel {
+  padding: 18px 12px;
+  display: grid;
+  gap: 6px;
+}
+.playlist-panel > .row {
+  padding: 0 7px 8px;
+}
+.playlist-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 9px;
+  color: var(--muted);
+  text-align: left;
+}
+.playlist-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.playlist-item small {
+  font-size: 10px;
+}
+.playlist-item:hover,
+.playlist-item.active {
+  color: var(--accent);
+  background: var(--tint);
+}
+.playlist-delete {
+  margin: 10px 8px 0;
+  color: #b45151;
+  text-align: left;
+}
+.music-library-title {
+  min-height: 68px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.playlist-picker {
+  display: grid;
+  gap: 10px;
+}
+.playlist-picker .button {
+  justify-content: flex-start;
+}
 .music-table-head,
 .music-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(100px, 0.4fr) 70px 60px 34px;
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 0.4fr) 70px 60px 34px 34px;
   gap: 18px;
   align-items: center;
   padding: 12px 24px;
@@ -279,6 +337,9 @@
   padding-top: 12px;
 }
 @media (max-width: 1250px) {
+  .music-layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
   #music-player {
     left: 185px;
     gap: 15px;
@@ -289,6 +350,16 @@
   }
 }
 @media (max-width: 900px) {
+  .music-layout {
+    grid-template-columns: 1fr;
+  }
+  .playlist-panel {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  .playlist-panel > .row,
+  .playlist-delete {
+    grid-column: 1 / -1;
+  }
   #music-player {
     left: 78px;
     grid-template-columns: minmax(110px, 1fr) minmax(180px, 1.5fr) 45px;
@@ -300,7 +371,7 @@
   }
   .music-table-head,
   .music-row {
-    grid-template-columns: minmax(0, 1fr) 55px 50px 30px;
+    grid-template-columns: minmax(0, 1fr) 55px 50px 30px 30px;
     gap: 10px;
     padding: 12px 15px;
   }

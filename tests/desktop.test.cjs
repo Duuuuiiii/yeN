@@ -40,6 +40,10 @@ async function nav(name) {
     "桌面持久保存测试",
   );
   assert.ok((await win.locator("#note-body").innerText()).includes("立即关闭"));
+  await win.locator('[data-action="fullscreen-note"]').click();
+  assert.equal(await win.locator(".notes-layout.fullscreen-note").count(), 1);
+  await win.keyboard.press("Escape");
+  assert.equal(await win.locator(".notes-layout.fullscreen-note").count(), 0);
   await nav("音乐");
   const fixtures = ["test-tone.mp3", "test-tone.flac"].map((n) =>
     path.join(root, "tests/fixtures", n),
@@ -49,6 +53,19 @@ async function nav(name) {
   }, fixtures);
   await win.getByRole("button", { name: "导入音乐", exact: false }).click();
   await win.waitForSelector(".music-row", { timeout: 30000 });
+  assert.equal(await win.locator(".music-row").count(), 2);
+  await win.getByRole("button", { name: "新建歌单" }).click();
+  await win.locator('#playlist-form [name="name"]').fill("专注学习");
+  await win.getByRole("button", { name: "创建歌单" }).click();
+  await win.locator('[data-playlist-select="all"]').click();
+  await win.locator("[data-track-add]").first().click();
+  await win
+    .locator("dialog")
+    .getByRole("button", { name: "专注学习", exact: false })
+    .click();
+  await win.locator(".playlist-item", { hasText: "专注学习" }).click();
+  assert.equal(await win.locator(".music-row").count(), 1);
+  await win.locator('[data-playlist-select="all"]').click();
   assert.equal(await win.locator(".music-row").count(), 2);
   await win.locator("[data-track-play]").nth(0).click();
   await win.waitForFunction(

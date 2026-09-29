@@ -19,9 +19,12 @@ document.addEventListener("click", async (e) => {
       await flush();
       model = await native.restoreSnapshot(name);
       model.music = model.music || [];
+      model.playlists = Array.isArray(model.playlists) ? model.playlists : [];
+      model.aiChat = Array.isArray(model.aiChat) ? model.aiChat.slice(-24) : [];
       audio.pause();
       audio.removeAttribute("src");
       musicState.selected = null;
+      musicState.playlist = "all";
       ui.selected = model.notes[0]?.id;
       closeModal();
       render();

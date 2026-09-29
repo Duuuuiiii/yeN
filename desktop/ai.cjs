@@ -2,6 +2,25 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { atomicWrite } = require("./storage.cjs");
 const MODEL = "deepseek-v4-pro";
+function validateHistory(value) {
+  if (value == null) return [];
+  if (!Array.isArray(value) || value.length > 24)
+    throw new Error("对话记录过长，请新建对话");
+  let total = 0;
+  return value.map((message) => {
+    if (
+      !message ||
+      !["user", "assistant"].includes(message.role) ||
+      typeof message.content !== "string" ||
+      !message.content.trim() ||
+      message.content.length > 12000
+    )
+      throw new Error("对话记录无效");
+    total += message.content.length;
+    if (total > 60000) throw new Error("对话记录过长，请新建对话");
+    return { role: message.role, content: message.content };
+  });
+}
 function validatePlan(value) {
   if (
     !value ||
@@ -86,6 +105,7 @@ class Assistant {
     this.busy = true;
     try {
       const planning = input.mode === "plan";
+      const history = planning ? [] : validateHistory(input.history);
       const response = await this.fetch(
         "https://api.deepseek.com/chat/completions",
         {
@@ -110,6 +130,7 @@ class Assistant {
                     ? '只输出 JSON，格式 {"summary":"说明", "sessions":[{"title":"具体学习内容","date":"YYYY-MM-DD","time":"HH:mm","minutes":30}]}。1 至 30 项，每项 5 至 480 分钟。参考已有安排避免时间冲突。只能提出新增安排，不得声称已修改现有安排。'
                     : "给出准确、简洁、可操作的学习建议。"),
               },
+              ...history,
               {
                 role: "user",
                 content:
@@ -155,4 +176,4 @@ class Assistant {
     }
   }
 }
-module.exports = { Assistant, validatePlan, MODEL };
+module.exports = { Assistant, validateHistory, validatePlan, MODEL };
