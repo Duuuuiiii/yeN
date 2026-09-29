@@ -154,6 +154,11 @@
       tint: "#e9edf2",
     },
   };
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", () => {
+      if (model?.settings?.appearance === "system") applyTheme();
+    });
   function seed() {
     const d = today();
     return {
@@ -280,6 +285,7 @@
       ],
       settings: {
         theme: "blue",
+        appearance: "system",
         motion: true,
         compact: false,
         reminders: false,
@@ -362,14 +368,42 @@
   }
   function applyTheme() {
     const t = themes[model.settings.theme] || themes.blue;
+    const preference = model.settings.appearance || "system";
+    const dark =
+      preference === "dark" ||
+      (preference === "system" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
     const style = document.documentElement.style;
-    Object.entries({
-      "--bg": t.colors[0],
-      "--sidebar": t.colors[1],
-      "--accent": t.accent,
-      "--accent-dark": t.dark,
-      "--tint": t.tint,
-    }).forEach(([k, v]) => style.setProperty(k, v));
+    const colors = dark
+      ? {
+          "--bg": "#121720",
+          "--surface": "#1b222d",
+          "--sidebar": "#171e28",
+          "--ink": "#e7ecf4",
+          "--muted": "#9aa6b6",
+          "--border": "#2b3543",
+          "--accent": t.accent,
+          "--accent-dark": t.dark,
+          "--tint": `color-mix(in srgb, ${t.accent} 20%, #1b222d)`,
+          "--success": "#73a997",
+          "--shadow": "0 10px 32px #00000030",
+        }
+      : {
+          "--bg": t.colors[0],
+          "--surface": "#fff",
+          "--sidebar": t.colors[1],
+          "--ink": "#273448",
+          "--muted": "#7b8798",
+          "--border": "#e6ebf2",
+          "--accent": t.accent,
+          "--accent-dark": t.dark,
+          "--tint": t.tint,
+          "--success": "#587e70",
+          "--shadow": "0 6px 26px #233e6310",
+        };
+    Object.entries(colors).forEach(([k, v]) => style.setProperty(k, v));
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    document.body.dataset.appearance = dark ? "dark" : "light";
     document.body.classList.toggle("compact", model.settings.compact);
     document.body.classList.toggle("no-motion", !model.settings.motion);
   }
@@ -562,9 +596,16 @@
     }</div>`;
   }
   function settingsView() {
-    return `<div class="page-head"><div><h1>设置</h1><div class="muted">外观、提醒与本地资料</div></div><span class="tag neutral">yeN ${desktopInfo?.version || "0.3.0"}</span></div><div class="settings-grid"><section class="card settings-card"><h2>配色</h2><p>修改后立即应用到所有页面。</p><div class="theme-grid">${Object.entries(
-      themes,
-    )
+    return `<div class="page-head"><div><h1>设置</h1><div class="muted">外观、提醒与本地资料</div></div><span class="tag neutral">yeN ${desktopInfo?.version || "0.3.0"}</span></div><div class="settings-grid"><section class="card settings-card"><h2>外观</h2><p>选择界面明暗与主配色，修改后立即应用。</p><div class="appearance-switch view-switch" role="group" aria-label="界面明暗">${[
+      ["system", "跟随系统"],
+      ["light", "浅色"],
+      ["dark", "深色"],
+    ]
+      .map(
+        ([id, label]) =>
+          `<button class="${(model.settings.appearance || "system") === id ? "active" : ""}" data-appearance="${id}">${label}</button>`,
+      )
+      .join("")}</div><div class="theme-grid">${Object.entries(themes)
       .map(
         ([id, t]) =>
           `<button class="theme-option ${model.settings.theme === id ? "active" : ""}" data-theme="${id}"><span class="swatches">${t.colors.map((c) => `<span style="background:${c}"></span>`).join("")}</span>${t.name}</button>`,
@@ -1139,6 +1180,8 @@
     }
     if (!m.settings || !themes[m.settings.theme])
       throw new Error("设置格式错误");
+    if (!["system", "light", "dark"].includes(m.settings.appearance))
+      m.settings.appearance = "system";
     const validDate = (s) =>
       typeof s === "string" &&
       /^\d{4}-\d{2}-\d{2}$/.test(s) &&
@@ -1406,6 +1449,12 @@
       }
       if (d.theme) {
         model.settings.theme = d.theme;
+        persist();
+        render();
+        return;
+      }
+      if (d.appearance) {
+        model.settings.appearance = d.appearance;
         persist();
         render();
         return;
@@ -1967,9 +2016,13 @@
       model.music = model.music || [];
       const backgroundSettingMissing =
         typeof model.settings.background !== "boolean";
+      const appearanceSettingMissing = !["system", "light", "dark"].includes(
+        model.settings.appearance,
+      );
+      if (appearanceSettingMissing) model.settings.appearance = "system";
       model.settings.background = model.settings.background !== false;
       await native.setBackgroundMode(model.settings.background);
-      if (backgroundSettingMissing) await persist();
+      if (backgroundSettingMissing || appearanceSettingMissing) await persist();
       initializeAssistant();
       initializeMusic();
       initializeNews();

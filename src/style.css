@@ -14,6 +14,7 @@
   font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
   color: var(--ink);
   background: var(--bg);
+  color-scheme: light;
   font-synthesis: none;
 }
 * {
@@ -23,6 +24,7 @@ body {
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
+  background: var(--bg);
 }
 button,
 input,
@@ -1146,6 +1148,14 @@ footer {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+}
+.appearance-switch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 16px;
+}
+.appearance-switch button {
+  min-width: 0;
 }
 .theme-option {
   border: 1px solid var(--border);

@@ -31,15 +31,31 @@ const path = require("node:path");
 
     assert.equal(
       await window.locator("#sidebar-version").innerText(),
-      "v0.5.2",
+      "v0.6.0",
     );
     assert.ok(
-      (await window.locator("#footer-version").innerText()).includes("v0.5.2"),
+      (await window.locator("#footer-version").innerText()).includes("v0.6.0"),
     );
-    assert.ok((await window.title()).includes("v0.5.2"));
+    assert.ok((await window.title()).includes("v0.6.0"));
 
     await window.locator('[data-page="settings"]').click();
-    assert.equal(await window.locator(".about-version").innerText(), "v0.5.2");
+    assert.equal(await window.locator(".about-version").innerText(), "v0.6.0");
+    await window.locator('[data-appearance="dark"]').click();
+    assert.equal(
+      await window.evaluate(() => document.body.dataset.appearance),
+      "dark",
+    );
+    assert.equal(
+      await window.evaluate(
+        () => getComputedStyle(document.documentElement).colorScheme,
+      ),
+      "dark",
+    );
+    await window.locator('[data-appearance="light"]').click();
+    assert.equal(
+      await window.evaluate(() => document.body.dataset.appearance),
+      "light",
+    );
 
     const state = await window.evaluate(() => window.shiyeDesktop.getState());
     assert.equal(state.settings.background, true);
