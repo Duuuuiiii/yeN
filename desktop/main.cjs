@@ -332,7 +332,7 @@ async function createWindow() {
     titleBarOverlay: {
       color: nativeTheme.shouldUseDarkColors ? "#1b222d" : "#ffffff",
       symbolColor: nativeTheme.shouldUseDarkColors ? "#e7ecf4" : "#273448",
-      height: 38,
+      height: 48,
     },
     icon: path.join(__dirname, "../build/icon.ico"),
     show: false,
@@ -425,7 +425,7 @@ function syncWindowTheme() {
   win.setTitleBarOverlay({
     color: nativeTheme.shouldUseDarkColors ? "#1b222d" : "#ffffff",
     symbolColor: nativeTheme.shouldUseDarkColors ? "#e7ecf4" : "#273448",
-    height: 38,
+    height: 48,
   });
   win.setBackgroundColor(
     nativeTheme.shouldUseDarkColors ? "#121720" : "#f4f6fa",

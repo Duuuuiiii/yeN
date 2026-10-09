@@ -29,6 +29,7 @@
     target:
       "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18m0 5a4 4 0 1 0 0 8 4 4 0 0 0 0-8",
     list: "M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01",
+    sidebar: "M3 4h18v16H3zM9 4v16",
   };
   Object.assign(paths, {
     music:
@@ -408,6 +409,20 @@
     native.setWindowTheme(preference).catch(() => {});
     document.body.classList.toggle("compact", model.settings.compact);
     document.body.classList.toggle("no-motion", !model.settings.motion);
+    applySidebarLayout();
+  }
+  function applySidebarLayout() {
+    const collapsed = model.settings.sidebarCollapsed === true;
+    document.body.classList.toggle("sidebar-collapsed", collapsed);
+    const button = $("#sidebar-toggle");
+    button.setAttribute("aria-expanded", String(!collapsed));
+    button.setAttribute("aria-label", collapsed ? "展开侧栏" : "收起侧栏");
+    button.title = (collapsed ? "展开侧栏" : "收起侧栏") + " · Ctrl + \\";
+  }
+  function toggleSidebar() {
+    model.settings.sidebarCollapsed = model.settings.sidebarCollapsed !== true;
+    applySidebarLayout();
+    persist();
   }
   const progress = (t) =>
     t.type === "once"
@@ -655,12 +670,13 @@
     $(".sidebar nav").innerHTML = nav
       .map(
         ([id, ic, label]) =>
-          `<button class="nav-item ${ui.page === id ? "active" : ""}" data-page="${id}" aria-label="${label}" ${ui.page === id ? 'aria-current="page"' : ""}>${icon(ic)}<span class="nav-label">${label}</span>${id === "notes" ? `<span class="nav-count">${model.notes.length}</span>` : ""}</button>`,
+          `<button class="nav-item ${ui.page === id ? "active" : ""}" data-page="${id}" aria-label="${label}" title="${label}" ${ui.page === id ? 'aria-current="page"' : ""}>${icon(ic)}<span class="nav-label">${label}</span>${id === "notes" ? `<span class="nav-count">${model.notes.length}</span>` : ""}</button>`,
       )
       .join("");
     $("#settings-nav").innerHTML =
       icon("settings") + '<span class="nav-label">设置</span>';
     $("#settings-nav").setAttribute("aria-label", "设置");
+    $("#settings-nav").title = "设置";
     $("#settings-nav").classList.toggle("active", ui.page === "settings");
     $("#page-name").textContent = {
       today: "今日",
@@ -674,6 +690,7 @@
       videos: "学习视频",
       settings: "设置",
     }[ui.page];
+    main.classList.toggle("page-notes", ui.page === "notes");
     main.innerHTML = {
       today: todayView,
       notes: notesView,
@@ -1474,6 +1491,10 @@
     if (!b) return;
     try {
       const d = b.dataset;
+      if (d.action === "toggle-sidebar") {
+        toggleSidebar();
+        return;
+      }
       if (d.page) {
         navigate(d.page);
         return;
@@ -2002,6 +2023,11 @@
     }
   });
   document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "\\") {
+      e.preventDefault();
+      toggleSidebar();
+      return;
+    }
     if (e.key === "Escape" && ui.noteFullscreen && !modal.open) {
       ui.noteFullscreen = false;
       render();
@@ -2043,6 +2069,7 @@
       const version = desktopInfo?.version || "未知";
       $("#sidebar-version").textContent = "v" + version;
       $("#window-version").textContent = "v" + version;
+      $("#sidebar-toggle").innerHTML = icon("sidebar", 18);
       $("#footer-version").textContent = `yeN v${version} · 桌面版`;
       document.title = `yeN v${version} · 学习工作台`;
       model = await read("state", "model");

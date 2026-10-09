@@ -11,11 +11,32 @@
   </head>
   <body>
     <header class="window-bar" aria-label="窗口标题栏">
+      <button
+        id="sidebar-toggle"
+        class="icon-button"
+        data-action="toggle-sidebar"
+        aria-label="收起侧栏"
+        aria-expanded="true"
+        aria-controls="sidebar"
+        title="收起侧栏 · Ctrl + \\"
+      ></button>
       <span class="window-mark">y</span><span>yeN</span
       ><span id="window-version"></span>
+      <div class="breadcrumb">
+        我的空间 <span>/</span> <strong id="page-name">今日</strong>
+      </div>
+      <div class="top-actions">
+        <span id="save-state" role="status">正在打开</span
+        ><button
+          class="icon-button"
+          data-action="search"
+          aria-label="搜索笔记"
+        ></button
+        ><button class="button primary" data-action="quick">＋ 新建</button>
+      </div>
     </header>
     <div id="app">
-      <aside class="sidebar">
+      <aside class="sidebar" id="sidebar">
         <a class="brand" href="#today"
           ><span class="brand-mark">y</span
           ><span>yeN<small>学习工作台</small></span></a
@@ -34,21 +55,6 @@
         </div>
       </aside>
       <div class="workspace">
-        <header class="topbar">
-          <div class="breadcrumb">
-            我的空间 <span>/</span> <strong id="page-name">今日</strong>
-          </div>
-          <div class="top-actions">
-            <span id="save-state" role="status">正在打开</span
-            ><button
-              class="icon-button"
-              data-action="search"
-              aria-label="搜索笔记"
-            ></button
-            ><button class="button primary" data-action="quick">＋ 新建</button
-            ><span class="avatar">我</span>
-          </div>
-        </header>
         <main id="main"></main>
         <footer>
           <span id="footer-version">yeN · 桌面版</span

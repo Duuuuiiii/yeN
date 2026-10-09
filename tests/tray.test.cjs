@@ -31,15 +31,15 @@ const path = require("node:path");
 
     assert.equal(
       await window.locator("#sidebar-version").innerText(),
-      "v0.8.1",
+      "v0.8.2",
     );
     assert.ok(
-      (await window.locator("#footer-version").innerText()).includes("v0.8.1"),
+      (await window.locator("#footer-version").innerText()).includes("v0.8.2"),
     );
-    assert.ok((await window.title()).includes("v0.8.1"));
+    assert.ok((await window.title()).includes("v0.8.2"));
 
     await window.locator('[data-page="settings"]').click();
-    assert.equal(await window.locator(".about-version").innerText(), "v0.8.1");
+    assert.equal(await window.locator(".about-version").innerText(), "v0.8.2");
     assert.equal(
       await window.locator("#update-status button").isDisabled(),
       true,
