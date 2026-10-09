@@ -19,6 +19,7 @@ const { importMusic, registerMedia } = require("./media.cjs");
 const { Assistant } = require("./ai.cjs");
 const { News } = require("./news.cjs");
 const { createUpdates } = require("./updates.cjs");
+const { AppTray } = require("./tray.cjs");
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "yen-media",
@@ -53,7 +54,6 @@ let win,
   backgroundMode = true,
   quitting = false,
   closeAction = "hide",
-  trayHintShown = false,
   closing = false,
   permittedClose = false,
   closeTimeout,
@@ -256,15 +256,6 @@ function registerIPC() {
     if (closeAction === "hide") {
       closing = false;
       win.hide();
-      if (!trayHintShown && tray) {
-        trayHintShown = true;
-        tray.displayBalloon({
-          title: "yeN 正在后台运行",
-          content: "点击右下角 yeN 图标可以重新打开，右键可彻底退出。",
-          iconType: "info",
-          noSound: true,
-        });
-      }
     } else {
       permittedClose = true;
       win.close();
@@ -281,21 +272,6 @@ function requestQuit() {
   quitting = true;
   if (win && !win.isDestroyed()) win.close();
   else app.quit();
-}
-function createTray() {
-  tray = new Tray(path.join(__dirname, "../build/icon.ico"));
-  const version = app.getVersion();
-  tray.setToolTip(`yeN v${version} · 学习工作台`);
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: `yeN v${version}`, enabled: false },
-      { type: "separator" },
-      { label: "打开 yeN", click: showWindow },
-      { type: "separator" },
-      { label: "彻底退出", click: requestQuit },
-    ]),
-  );
-  tray.on("click", showWindow);
 }
 async function saveWindow() {
   if (win && !win.isDestroyed())
@@ -462,7 +438,16 @@ else {
       registerMedia(protocol, () => store);
       registerIPC();
       await createWindow();
-      createTray();
+      tray = new AppTray({
+        Tray,
+        Menu,
+        icon: path.join(__dirname, "../build/icon.ico"),
+        version: app.getVersion(),
+        showWindow,
+        requestQuit,
+        isolated: Boolean(testing || customData),
+      });
+      tray.create();
       updates.start();
     })
     .catch((e) => {
@@ -477,5 +462,8 @@ else {
     quitting = true;
     clearTimeout(backupTimer);
     updates?.stop();
+  });
+  app.on("will-quit", () => {
+    tray?.destroy();
   });
 }

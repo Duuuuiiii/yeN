@@ -2,6 +2,7 @@ const { _electron: electron } = require("playwright");
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
+const { spawn } = require("node:child_process");
 
 (async () => {
   const root = path.resolve(__dirname, "..");
@@ -19,6 +20,7 @@ const path = require("node:path");
         }),
     timeout: 60000,
   });
+  const appProcess = application.process();
   let exited = false;
   try {
     let window;
@@ -31,15 +33,15 @@ const path = require("node:path");
 
     assert.equal(
       await window.locator("#sidebar-version").innerText(),
-      "v0.8.2",
+      "v0.8.3",
     );
     assert.ok(
-      (await window.locator("#footer-version").innerText()).includes("v0.8.2"),
+      (await window.locator("#footer-version").innerText()).includes("v0.8.3"),
     );
-    assert.ok((await window.title()).includes("v0.8.2"));
+    assert.ok((await window.title()).includes("v0.8.3"));
 
     await window.locator('[data-page="settings"]').click();
-    assert.equal(await window.locator(".about-version").innerText(), "v0.8.2");
+    assert.equal(await window.locator(".about-version").innerText(), "v0.8.3");
     assert.equal(
       await window.locator("#update-status button").isDisabled(),
       true,
@@ -64,6 +66,13 @@ const path = require("node:path");
     const state = await window.evaluate(() => window.shiyeDesktop.getState());
     assert.equal(state.settings.background, true);
 
+    await application.evaluate(({ Tray, Notification }) => {
+      globalThis.backgroundNotifications = 0;
+      Tray.prototype.displayBalloon = () =>
+        globalThis.backgroundNotifications++;
+      Notification.prototype.show = () => globalThis.backgroundNotifications++;
+    });
+
     await application.evaluate(({ BrowserWindow }) =>
       BrowserWindow.getAllWindows()[0].close(),
     );
@@ -75,7 +84,37 @@ const path = require("node:path");
       false,
     );
 
-    await application.evaluate(({ app }) => app.emit("second-instance"));
+    assert.equal(
+      await application.evaluate(() => globalThis.backgroundNotifications),
+      0,
+      "进入后台不应发送通知",
+    );
+    const second = spawn(
+      process.env.YEN_PACKAGED
+        ? path.join(root, "release/win-unpacked/yeN.exe")
+        : require("electron"),
+      process.env.YEN_PACKAGED ? ["--data-dir=" + data] : [root],
+      { env: { ...process.env, SHIYE_TEST_DATA: data }, stdio: "ignore" },
+    );
+    try {
+      const result = await new Promise((resolve, reject) => {
+        const timer = setTimeout(
+          () => reject(new Error("第二个进程没有退出")),
+          10000,
+        );
+        second.once("error", (error) => {
+          clearTimeout(timer);
+          reject(error);
+        });
+        second.once("exit", (code) => {
+          clearTimeout(timer);
+          resolve(code);
+        });
+      });
+      assert.equal(result, 0, "重复启动应正常退出第二个进程");
+    } finally {
+      if (second.exitCode === null) second.kill();
+    }
     await window.waitForFunction(() => document.visibilityState === "visible");
     assert.equal(
       await application.evaluate(({ BrowserWindow }) =>
@@ -86,7 +125,7 @@ const path = require("node:path");
 
     await window.evaluate(() => window.shiyeDesktop.setBackgroundMode(false));
     const exit = new Promise((resolve) =>
-      application.process().once("exit", () => {
+      appProcess.once("exit", () => {
         exited = true;
         resolve();
       }),
@@ -112,7 +151,7 @@ const path = require("node:path");
         application.close().catch(() => {}),
         new Promise((resolve) => setTimeout(resolve, 3000)),
       ]);
-      if (application.process().exitCode === null) application.process().kill();
+      if (appProcess.exitCode === null) appProcess.kill();
     }
   }
 })().catch((error) => {
