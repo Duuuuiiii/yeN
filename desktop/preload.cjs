@@ -1,5 +1,10 @@
 const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("shiyeDesktop", {
+  updateStatus: () => ipcRenderer.invoke("shiye:update-status"),
+  updateCheck: () => ipcRenderer.invoke("shiye:update-check"),
+  updateInstall: () => ipcRenderer.invoke("shiye:update-install"),
+  onUpdateStatus: (callback) =>
+    ipcRenderer.on("shiye:update-status", (_event, status) => callback(status)),
   setBackgroundMode: (enabled) =>
     ipcRenderer.invoke("shiye:background-mode", enabled),
   aiStatus: () => ipcRenderer.invoke("shiye:ai-status"),

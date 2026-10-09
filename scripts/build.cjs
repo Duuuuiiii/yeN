@@ -29,7 +29,9 @@ for (const file of ["app.js", "style.css"]) {
             "\n" +
             read("snapshot-ui.js") +
             "\n" +
-            read("learning-ui.js"),
+            read("learning-ui.js") +
+            "\n" +
+            read("update-ui.js"),
         )
       : read(file) +
         "\n" +

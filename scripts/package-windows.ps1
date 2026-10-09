@@ -13,6 +13,6 @@ Push-Location $projectRoot
 try {
   node scripts/build.cjs
   if ($LASTEXITCODE) { throw 'Frontend build failed' }
-  node node_modules/electron-builder/cli.js --win nsis portable --x64 --config.electronDist=node_modules/electron/dist
+  node node_modules/electron-builder/cli.js --win nsis portable --x64 --config.electronDist=node_modules/electron/dist --publish never
   if ($LASTEXITCODE) { throw 'Windows package build failed' }
 } finally { Pop-Location }

@@ -1,7 +1,7 @@
 {
   "name": "yen-study-desk",
   "productName": "yeN",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "description": "本地学习工作台：笔记、任务、目标与日程",
   "author": "yeN个人项目",
@@ -12,7 +12,7 @@
     "test:storage": "node --test tests/storage.test.cjs tests/export.test.cjs",
     "test:desktop": "node tests/desktop.test.cjs",
     "test:tray": "node tests/tray.test.cjs",
-    "package": "node scripts/build.cjs && electron-builder --win nsis portable --x64"
+    "package": "node scripts/build.cjs && electron-builder --win nsis portable --x64 --publish never"
   },
   "devDependencies": {
     "electron": "44.4.5",
@@ -62,9 +62,16 @@
     },
     "portable": {
       "artifactName": "yeN-Portable-${version}-${arch}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "Duuuuiiii",
+      "repo": "yeN",
+      "releaseType": "release"
     }
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "fast-xml-parser": "^5.11.1",
     "music-metadata": "^11.16.1"
   }

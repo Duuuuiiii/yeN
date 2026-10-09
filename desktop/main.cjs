@@ -17,6 +17,7 @@ const { Storage, atomicWrite } = require("./storage.cjs");
 const { importMusic, registerMedia } = require("./media.cjs");
 const { Assistant } = require("./ai.cjs");
 const { News } = require("./news.cjs");
+const { createUpdates } = require("./updates.cjs");
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "yen-media",
@@ -45,6 +46,8 @@ let win,
   store,
   news,
   assistant,
+  updates,
+  updateRequested = false,
   backupTimer,
   backgroundMode = true,
   quitting = false,
@@ -90,6 +93,16 @@ async function dataInfo() {
   };
 }
 function registerIPC() {
+  handle("update-status", () => updates.status());
+  handle("update-check", () => updates.check());
+  handle("update-install", () => {
+    if (updates.status().phase !== "downloaded")
+      throw new Error("更新还没有下载完成");
+    if (closing) throw new Error("正在保存，请稍后重试");
+    updateRequested = true;
+    requestQuit();
+    return true;
+  });
   handle("background-mode", (enabled) => {
     backgroundMode = enabled !== false;
     return backgroundMode;
@@ -190,11 +203,39 @@ function registerIPC() {
     clearTimeout(closeTimeout);
     if (error) {
       closing = false;
+      quitting = false;
+      updateRequested = false;
       dialog.showMessageBox(win, {
         type: "error",
         message: "内容尚未保存",
         detail: String(error) + "\n请先导出备份，再关闭软件。",
       });
+      return;
+    }
+    if (updateRequested) {
+      try {
+        await updates.installAfterSave(
+          async () => {
+            await store.queue;
+            if (!(await store.backup(true)))
+              throw new Error("没有可备份的状态");
+            await saveWindow();
+          },
+          (allowed) => {
+            permittedClose = allowed;
+          },
+        );
+      } catch (e) {
+        closing = false;
+        quitting = false;
+        permittedClose = false;
+        updateRequested = false;
+        dialog.showMessageBox(win, {
+          type: "error",
+          message: "更新已暂停",
+          detail: e.message,
+        });
+      }
       return;
     }
     await store.queue;
@@ -355,6 +396,7 @@ async function createWindow() {
       });
       closing = false;
       quitting = false;
+      updateRequested = false;
       if (result.response === 1) win.close();
     }, 12000);
   });
@@ -380,10 +422,18 @@ else {
       }
       news = await new News(app.getPath("userData")).init();
       assistant = new Assistant(app.getPath("userData"), safeStorage);
+      updates = createUpdates(app, {
+        isolated: Boolean(testing || customData),
+        onStatus: (status) => {
+          if (win && !win.isDestroyed())
+            win.webContents.send("shiye:update-status", status);
+        },
+      });
       registerMedia(protocol, () => store);
       registerIPC();
       await createWindow();
       createTray();
+      updates.start();
     })
     .catch((e) => {
       console.error("yeN startup failed:", e);
@@ -396,5 +446,6 @@ else {
   app.on("before-quit", () => {
     quitting = true;
     clearTimeout(backupTimer);
+    updates?.stop();
   });
 }
