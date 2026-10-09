@@ -37,7 +37,9 @@ for (const file of ["app.js", "style.css"]) {
         "\n" +
         read("extensions.css") +
         "\n" +
-        read("learning.css");
+        read("learning.css") +
+        "\n" +
+        read("window.css");
   fs.writeFileSync(path.join(root, "dist", file), content);
 }
 console.log("Desktop assets built.");

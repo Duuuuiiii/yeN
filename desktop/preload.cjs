@@ -1,5 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("shiyeDesktop", {
+  setWindowTheme: (appearance) =>
+    ipcRenderer.invoke("shiye:window-theme", appearance),
   updateStatus: () => ipcRenderer.invoke("shiye:update-status"),
   updateCheck: () => ipcRenderer.invoke("shiye:update-check"),
   updateInstall: () => ipcRenderer.invoke("shiye:update-install"),

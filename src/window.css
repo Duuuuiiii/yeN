@@ -1,0 +1,136 @@
+:root {
+  --window-bar-height: 38px;
+}
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+.window-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--window-bar-height);
+  padding: 0 150px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  user-select: none;
+  -webkit-app-region: drag;
+  z-index: 100;
+}
+.window-bar > span {
+  pointer-events: none;
+}
+.window-mark {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  font-weight: 650;
+}
+#window-version {
+  color: var(--muted);
+  font-size: 10px;
+}
+#app {
+  position: fixed;
+  inset: var(--window-bar-height) 0 0;
+  height: calc(100vh - var(--window-bar-height));
+  min-height: 0;
+  overflow: hidden;
+}
+.sidebar {
+  top: var(--window-bar-height);
+  min-height: 0;
+  padding-top: 20px;
+  padding-bottom: 14px;
+}
+.brand {
+  flex-shrink: 0;
+  padding-bottom: 20px;
+}
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  gap: 4px;
+}
+.sidebar nav .nav-item {
+  flex-shrink: 0;
+}
+.side-bottom {
+  flex-shrink: 0;
+  margin-top: 12px;
+}
+.local-label {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+.workspace {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 86px;
+}
+.topbar {
+  flex-shrink: 0;
+  height: 64px;
+}
+main {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  margin: 0 auto;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+footer {
+  flex-shrink: 0;
+}
+.notes-layout.fullscreen-note {
+  top: var(--window-bar-height);
+  height: calc(100vh - var(--window-bar-height));
+  min-height: 0;
+}
+.notes-layout.fullscreen-note .editor-panel {
+  height: calc(100vh - var(--window-bar-height));
+}
+@media (max-height: 650px) {
+  .sidebar {
+    padding-top: 14px;
+  }
+  .brand {
+    padding-bottom: 14px;
+  }
+  .sidebar nav {
+    gap: 2px;
+  }
+  .nav-item {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .local-label {
+    display: none;
+  }
+  .side-bottom {
+    margin-top: 8px;
+  }
+  .topbar {
+    height: 58px;
+  }
+  footer {
+    display: none;
+  }
+}

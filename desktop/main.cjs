@@ -9,6 +9,7 @@ const {
   Tray,
   protocol,
   safeStorage,
+  nativeTheme,
 } = require("electron");
 const path = require("node:path");
 const fs = require("node:fs/promises");
@@ -93,6 +94,13 @@ async function dataInfo() {
   };
 }
 function registerIPC() {
+  handle("window-theme", (appearance) => {
+    if (!["system", "light", "dark"].includes(appearance))
+      throw new Error("外观设置无效");
+    if (nativeTheme.themeSource !== appearance)
+      nativeTheme.themeSource = appearance;
+    syncWindowTheme();
+  });
   handle("update-status", () => updates.status());
   handle("update-check", () => updates.check());
   handle("update-install", () => {
@@ -309,13 +317,23 @@ async function createWindow() {
       ),
     );
   } catch {}
+  const appearance = (await store.readState())?.settings?.appearance;
+  nativeTheme.themeSource = ["system", "light", "dark"].includes(appearance)
+    ? appearance
+    : "system";
   win = new BrowserWindow({
     width: settings.bounds?.width || 1440,
     height: settings.bounds?.height || 980,
     minWidth: 720,
     minHeight: 550,
     title: "yeN",
-    backgroundColor: "#f4f6fa",
+    backgroundColor: nativeTheme.shouldUseDarkColors ? "#121720" : "#f4f6fa",
+    titleBarStyle: "hidden",
+    titleBarOverlay: {
+      color: nativeTheme.shouldUseDarkColors ? "#1b222d" : "#ffffff",
+      symbolColor: nativeTheme.shouldUseDarkColors ? "#e7ecf4" : "#273448",
+      height: 38,
+    },
     icon: path.join(__dirname, "../build/icon.ico"),
     show: false,
     autoHideMenuBar: true,
@@ -402,6 +420,18 @@ async function createWindow() {
   });
   await win.loadFile(index);
 }
+function syncWindowTheme() {
+  if (!win || win.isDestroyed()) return;
+  win.setTitleBarOverlay({
+    color: nativeTheme.shouldUseDarkColors ? "#1b222d" : "#ffffff",
+    symbolColor: nativeTheme.shouldUseDarkColors ? "#e7ecf4" : "#273448",
+    height: 38,
+  });
+  win.setBackgroundColor(
+    nativeTheme.shouldUseDarkColors ? "#121720" : "#f4f6fa",
+  );
+}
+nativeTheme.on("updated", syncWindowTheme);
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on("second-instance", () => {

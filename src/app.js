@@ -405,6 +405,7 @@
     Object.entries(colors).forEach(([k, v]) => style.setProperty(k, v));
     document.documentElement.style.colorScheme = dark ? "dark" : "light";
     document.body.dataset.appearance = dark ? "dark" : "light";
+    native.setWindowTheme(preference).catch(() => {});
     document.body.classList.toggle("compact", model.settings.compact);
     document.body.classList.toggle("no-motion", !model.settings.motion);
   }
@@ -2041,6 +2042,7 @@
       db = await openDB();
       const version = desktopInfo?.version || "未知";
       $("#sidebar-version").textContent = "v" + version;
+      $("#window-version").textContent = "v" + version;
       $("#footer-version").textContent = `yeN v${version} · 桌面版`;
       document.title = `yeN v${version} · 学习工作台`;
       model = await read("state", "model");
